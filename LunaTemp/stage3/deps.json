@@ -1,0 +1,14 @@
+{
+  "ignores": [],
+  "groups": [
+    [
+      "C:/Users/ssavi/Downloads/Luna/pipeline/templates/LunaCompiler/Scripts/Properties/AssemblyInfo.cs"
+    ],
+    [
+      "C:/Users/ssavi/Downloads/Luna/pipeline/templates/LunaCompiler/Scripts/Sources/OtherDummyScript.cs"
+    ],
+    [
+      "C:/Users/ssavi/Downloads/Luna/pipeline/templates/LunaCompiler/Scripts/obj/Debug/.NETFramework,Version=v4.7.AssemblyAttributes.cs"
+    ]
+  ]
+}
