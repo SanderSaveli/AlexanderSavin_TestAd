@@ -53,6 +53,7 @@ MonoBehaviour:
   - {fileID: 2100000, guid: 78b5f3fa443f96b4396b96d256cacced, type: 2}
   - {fileID: 2100000, guid: e3b3ab70e0882b34d9788bc125645920, type: 2}
   - {fileID: 2100000, guid: 9bdfa13f3ede48845b22e7f332005f30, type: 2}
+  - {fileID: 2100000, guid: 44a8e3f187145514ca625937d541f0e1, type: 2}
   _initialColors: 
   _diskHeight: 0.12
   _isOfferStack: 0

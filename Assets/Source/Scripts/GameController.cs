@@ -167,13 +167,13 @@ public sealed class GameController : MonoBehaviour
 
         if (_packshot == null)
         {
-            _packshot = FindSceneObjectIncludingInactive<PackshotController>();
+            _packshot = FindObjectOfType<PackshotController>(true);
         }
     }
 
     private void InitializeStacks()
     {
-        HexStack[] stacks = FindSceneObjectsIncludingInactive<HexStack>();
+        HexStack[] stacks = FindObjectsOfType<HexStack>(true);
         foreach (HexStack stack in stacks)
         {
             stack.InitializeRuntime();
@@ -182,7 +182,7 @@ public sealed class GameController : MonoBehaviour
 
     private bool HasRemainingOfferStacks()
     {
-        HexStack[] stacks = FindSceneObjectsIncludingInactive<HexStack>();
+        HexStack[] stacks = FindObjectsOfType<HexStack>(true);
         foreach (HexStack stack in stacks)
         {
             if (stack.IsOfferStack)
@@ -202,34 +202,5 @@ public sealed class GameController : MonoBehaviour
             && _reactionResolver != null
             && _tutorial != null
             && _packshot != null;
-    }
-
-    private static T FindSceneObjectIncludingInactive<T>() where T : Component
-    {
-        T[] objects = Resources.FindObjectsOfTypeAll<T>();
-        foreach (T target in objects)
-        {
-            if (target.gameObject.scene.IsValid())
-            {
-                return target;
-            }
-        }
-
-        return null;
-    }
-
-    private static T[] FindSceneObjectsIncludingInactive<T>() where T : Component
-    {
-        T[] objects = Resources.FindObjectsOfTypeAll<T>();
-        System.Collections.Generic.List<T> sceneObjects = new System.Collections.Generic.List<T>(objects.Length);
-        foreach (T target in objects)
-        {
-            if (target.gameObject.scene.IsValid())
-            {
-                sceneObjects.Add(target);
-            }
-        }
-
-        return sceneObjects.ToArray();
     }
 }
