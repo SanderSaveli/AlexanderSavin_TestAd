@@ -14,6 +14,7 @@ public static class PlayableSceneBuilder
     private const string HexFxPath = "Assets/_HexTest/HexFx.prefab";
     private const string MaterialFolder = "Assets/Source/Materials";
     private const string PrefabFolder = "Assets/Source/Prefabs";
+    private const string ColorShaderPath = "Assets/Source/Shaders/HexPlayableUnlitColor.shader";
 
     [MenuItem("Tools/TestAD/Rebuild Playable Scene")]
     public static void RebuildPlayableScene()
@@ -490,13 +491,29 @@ public static class PlayableSceneBuilder
         Material material = AssetDatabase.LoadAssetAtPath<Material>(path);
         if (material == null)
         {
-            material = new Material(Shader.Find("Standard"));
+            material = new Material(GetColorShader());
             AssetDatabase.CreateAsset(material, path);
+        }
+        else
+        {
+            material.shader = GetColorShader();
         }
 
         material.color = color;
         EditorUtility.SetDirty(material);
         return material;
+    }
+
+    private static Shader GetColorShader()
+    {
+        Shader shader = AssetDatabase.LoadAssetAtPath<Shader>(ColorShaderPath);
+        if (shader != null)
+        {
+            return shader;
+        }
+
+        shader = Shader.Find("Unlit/Color");
+        return shader != null ? shader : Shader.Find("Standard");
     }
 
     private static List<HexColorId> Repeat(HexColorId color, int amount)
