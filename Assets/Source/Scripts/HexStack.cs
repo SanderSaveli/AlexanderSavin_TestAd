@@ -58,6 +58,12 @@ public sealed class HexStack : MonoBehaviour
 
     public void InitializeRuntime()
     {
+        if (transform.childCount == 0 && _initialColors.Count > 0)
+        {
+            BuildVisuals();
+            return;
+        }
+
         _disks.Clear();
         List<HexDisk> childDisks = new List<HexDisk>(GetComponentsInChildren<HexDisk>(true));
         childDisks.Sort((left, right) => left.transform.localPosition.y.CompareTo(right.transform.localPosition.y));

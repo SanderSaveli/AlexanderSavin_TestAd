@@ -10,6 +10,8 @@ public sealed class TutorialController : MonoBehaviour
     [SerializeField] private Camera _gameCamera;
     [SerializeField] private Transform _sourceStack;
     [SerializeField] private float _replayDelay = 1.8f;
+    [SerializeField] private Vector2 _pressOffset = new Vector2(0f, 54f);
+    [SerializeField] private Vector2 _releaseOffset = new Vector2(0f, 64f);
 
     private BoardController _board;
     private Sequence _loop;
@@ -34,7 +36,8 @@ public sealed class TutorialController : MonoBehaviour
 
     public void Play()
     {
-        if (_hand == null || _sourceStack == null || _board.TargetCell == null)
+        HexCell tutorialCell = _board.GetTutorialCell();
+        if (_hand == null || _sourceStack == null || tutorialCell == null)
         {
             return;
         }
@@ -48,16 +51,22 @@ public sealed class TutorialController : MonoBehaviour
         _loop?.Kill();
         _hand.gameObject.SetActive(true);
         Vector2 from = WorldToCanvas(_sourceStack.position + new Vector3(0.2f, 0.2f, 0f));
-        Vector2 to = WorldToCanvas(_board.TargetCell.transform.position + Vector3.up * 0.1f);
-        _hand.anchoredPosition = from;
+        Vector2 to = WorldToCanvas(tutorialCell.transform.position + Vector3.up * 0.1f);
+        Vector2 hoverFrom = from + _pressOffset;
+        Vector2 hoverTo = to + _releaseOffset;
+        _hand.anchoredPosition = hoverFrom;
         _hand.localScale = Vector3.one;
 
         _loop = DOTween.Sequence();
-        _loop.Append(_hand.DOAnchorPos(to, 0.9f).SetEase(Ease.InOutSine));
-        _loop.AppendInterval(0.18f);
-        _loop.Append(_hand.DOScale(0.9f, 0.12f).SetLoops(2, LoopType.Yoyo));
-        _loop.AppendInterval(0.35f);
-        _loop.Append(_hand.DOAnchorPos(from, 0.01f));
+        _loop.Append(_hand.DOAnchorPos(from, 0.18f).SetEase(Ease.OutQuad));
+        _loop.Join(_hand.DOScale(0.88f, 0.18f).SetEase(Ease.OutQuad));
+        _loop.AppendInterval(0.08f);
+        _loop.Append(_hand.DOAnchorPos(to, 0.78f).SetEase(Ease.InOutSine));
+        _loop.AppendInterval(0.08f);
+        _loop.Append(_hand.DOAnchorPos(hoverTo, 0.18f).SetEase(Ease.OutQuad));
+        _loop.Join(_hand.DOScale(1f, 0.18f).SetEase(Ease.OutBack));
+        _loop.AppendInterval(0.28f);
+        _loop.Append(_hand.DOAnchorPos(hoverFrom, 0.01f));
         _loop.AppendInterval(0.25f);
         _loop.SetLoops(-1);
     }

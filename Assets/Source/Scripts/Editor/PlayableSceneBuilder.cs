@@ -29,12 +29,12 @@ public static class PlayableSceneBuilder
 
         List<Material> materials = CreateMaterials();
         GameObject diskPrefabAsset = CreateDiskPrefab(materials[0]);
-        CreateCellPrefab();
-        CreateStackPrefab(diskPrefabAsset.transform, materials);
+        GameObject cellPrefabAsset = CreateCellPrefab();
+        GameObject stackPrefabAsset = CreateStackPrefab(diskPrefabAsset.transform, materials);
         GameObject fxPrefab = CreateVanishFxPrefab();
 
         GameObject root = new GameObject("PlayableRoot");
-        BoardController board = CreateBoard(root.transform, diskPrefabAsset.transform, materials);
+        BoardController board = CreateBoard(root.transform, cellPrefabAsset, stackPrefabAsset.GetComponent<HexStack>(), diskPrefabAsset.transform, materials);
         List<HexStack> offers = CreateOfferStacks(root.transform, diskPrefabAsset.transform, materials);
 
         GameObject systems = new GameObject("Systems");
@@ -92,81 +92,107 @@ public static class PlayableSceneBuilder
         fill.color = new Color(0.78f, 0.91f, 1f);
     }
 
-    private static BoardController CreateBoard(Transform root, Transform diskPrefab, List<Material> materials)
+    private static BoardController CreateBoard(Transform root, GameObject cellPrefab, HexStack stackPrefab, Transform diskPrefab, List<Material> materials)
     {
         GameObject boardObject = new GameObject("Board");
         boardObject.transform.SetParent(root);
+        boardObject.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+        Grid grid = boardObject.AddComponent<Grid>();
+        grid.cellLayout = GridLayout.CellLayout.Hexagon;
+        grid.cellSize = new Vector3(1.8f, 2.08f, 1f);
+        grid.cellSwizzle = GridLayout.CellSwizzle.YXZ;
+
         BoardController board = boardObject.AddComponent<BoardController>();
+        SetSerialized(board, "_grid", grid);
+        SetSerialized(board, "_stackPrefab", stackPrefab);
+        SetSerialized(board, "_diskPrefab", diskPrefab);
+        SetSerializedMaterials(board, "_colorMaterials", materials);
 
-        Dictionary<Vector2Int, List<HexColorId>> stacks = CreateBoardStacks();
-        for (int q = -2; q <= 2; q++)
+        GameObject cellsObject = new GameObject("BoardCells");
+        cellsObject.transform.SetParent(boardObject.transform, false);
+
+        Dictionary<int, List<HexColorId>> stacks = CreateBoardStacks();
+        List<CellPlacement> placements = CreateCellPlacements(grid);
+        foreach (CellPlacement placement in placements)
         {
-            for (int r = -2; r <= 2; r++)
-            {
-                Vector2Int coordinate = new Vector2Int(q, r);
-                if (Mathf.Max(Mathf.Abs(q), Mathf.Abs(r), Mathf.Abs(q + r)) > 2)
-                {
-                    continue;
-                }
-
-                bool target = coordinate == new Vector2Int(0, -2);
-                stacks.TryGetValue(coordinate, out List<HexColorId> colors);
-                CreateCell(boardObject.transform, coordinate, target, colors, diskPrefab, materials);
-            }
+            stacks.TryGetValue(placement.Id, out List<HexColorId> colors);
+            CreateCell(cellsObject.transform, cellPrefab, placement, colors);
         }
 
         return board;
     }
 
-    private static Dictionary<Vector2Int, List<HexColorId>> CreateBoardStacks()
+    private static List<CellPlacement> CreateCellPlacements(Grid grid)
     {
-        return new Dictionary<Vector2Int, List<HexColorId>>
+        return new List<CellPlacement>
         {
-            { new Vector2Int(-2, 0), StackWithTop(HexColorId.Yellow, HexColorId.Purple, HexColorId.Blue, 4) },
-            { new Vector2Int(-2, 1), StackWithTop(HexColorId.Blue, HexColorId.Green, HexColorId.Yellow, 4) },
-            { new Vector2Int(-2, 2), StackWithTop(HexColorId.Yellow, HexColorId.Red, HexColorId.Purple, 3) },
-            { new Vector2Int(-1, -1), LayeredStack(HexColorId.Purple, 5, HexColorId.Red, 5) },
-            { new Vector2Int(-1, 0), Repeat(HexColorId.Purple, 5) },
-            { new Vector2Int(-1, 1), StackWithTop(HexColorId.Red, HexColorId.Blue, HexColorId.Purple, 4) },
-            { new Vector2Int(-1, 2), StackWithTop(HexColorId.Green, HexColorId.Yellow, HexColorId.Blue, 3) },
-            { new Vector2Int(0, -1), LayeredStack(HexColorId.Yellow, 5, HexColorId.Blue, 5) },
-            { new Vector2Int(0, 0), Repeat(HexColorId.Yellow, 5) },
-            { new Vector2Int(0, 1), StackWithTop(HexColorId.Blue, HexColorId.Green, HexColorId.Yellow, 4) },
-            { new Vector2Int(0, 2), StackWithTop(HexColorId.Yellow, HexColorId.Red, HexColorId.Green, 3) },
-            { new Vector2Int(1, -2), LayeredStack(HexColorId.Red, 5, HexColorId.Green, 5) },
-            { new Vector2Int(1, -1), Repeat(HexColorId.Red, 5) },
-            { new Vector2Int(1, 0), StackWithTop(HexColorId.Green, HexColorId.Blue, HexColorId.Red, 4) },
-            { new Vector2Int(1, 1), StackWithTop(HexColorId.Red, HexColorId.Purple, HexColorId.Yellow, 3) },
-            { new Vector2Int(2, -2), StackWithTop(HexColorId.Yellow, HexColorId.Red, HexColorId.Blue, 3) },
-            { new Vector2Int(2, -1), StackWithTop(HexColorId.Blue, HexColorId.Green, HexColorId.Purple, 4) },
-            { new Vector2Int(2, 0), StackWithTop(HexColorId.Yellow, HexColorId.Blue, HexColorId.Green, 3) }
+            new CellPlacement(0, grid.GetCellCenterWorld(new Vector3Int(-2, 0, 0))),
+            new CellPlacement(1, grid.GetCellCenterWorld(new Vector3Int(-2, 1, 0))),
+            new CellPlacement(2, grid.GetCellCenterWorld(new Vector3Int(-2, 2, 0))),
+            new CellPlacement(3, grid.GetCellCenterWorld(new Vector3Int(-1, -1, 0))),
+            new CellPlacement(4, grid.GetCellCenterWorld(new Vector3Int(-1, 0, 0))),
+            new CellPlacement(5, grid.GetCellCenterWorld(new Vector3Int(-1, 1, 0))),
+            new CellPlacement(6, grid.GetCellCenterWorld(new Vector3Int(-1, 2, 0))),
+            new CellPlacement(7, grid.GetCellCenterWorld(new Vector3Int(0, -2, 0))),
+            new CellPlacement(8, grid.GetCellCenterWorld(new Vector3Int(0, -1, 0))),
+            new CellPlacement(9, grid.GetCellCenterWorld(new Vector3Int(0, 0, 0))),
+            new CellPlacement(10, grid.GetCellCenterWorld(new Vector3Int(0, 1, 0))),
+            new CellPlacement(11, grid.GetCellCenterWorld(new Vector3Int(0, 2, 0))),
+            new CellPlacement(12, grid.GetCellCenterWorld(new Vector3Int(1, -2, 0))),
+            new CellPlacement(13, grid.GetCellCenterWorld(new Vector3Int(1, -1, 0))),
+            new CellPlacement(14, grid.GetCellCenterWorld(new Vector3Int(1, 0, 0))),
+            new CellPlacement(15, grid.GetCellCenterWorld(new Vector3Int(1, 1, 0))),
+            new CellPlacement(16, grid.GetCellCenterWorld(new Vector3Int(2, -2, 0))),
+            new CellPlacement(17, grid.GetCellCenterWorld(new Vector3Int(2, -1, 0))),
+            new CellPlacement(18, grid.GetCellCenterWorld(new Vector3Int(2, 0, 0)))
         };
     }
 
-    private static HexCell CreateCell(Transform parent, Vector2Int coordinate, bool target, List<HexColorId> colors, Transform diskPrefab, List<Material> materials)
+    private static Dictionary<int, List<HexColorId>> CreateBoardStacks()
     {
-        GameObject cellObject = new GameObject("Cell_" + coordinate.x + "_" + coordinate.y);
+        return new Dictionary<int, List<HexColorId>>
+        {
+            { 1, Repeat(HexColorId.Red, 5) },
+            { 2, StackWithTop(HexColorId.Red, HexColorId.Yellow, HexColorId.Blue, 3) },
+            { 3, StackWithTop(HexColorId.Green, HexColorId.Purple, HexColorId.Blue, 4) },
+            { 4, Repeat(HexColorId.Green, 5) },
+            { 5, Repeat(HexColorId.Blue, 5) },
+            { 6, StackWithTop(HexColorId.Red, HexColorId.Blue, HexColorId.Purple, 4) },
+            { 7, StackWithTop(HexColorId.Green, HexColorId.Yellow, HexColorId.Blue, 3) },
+            { 8, LayeredStack(HexColorId.Yellow, 5, HexColorId.Blue, 5) },
+            { 9, Repeat(HexColorId.Yellow, 5) },
+            { 10, StackWithTop(HexColorId.Purple, HexColorId.Green, HexColorId.Yellow, 4) },
+            { 11, StackWithTop(HexColorId.Yellow, HexColorId.Red, HexColorId.Green, 3) },
+            { 12, LayeredStack(HexColorId.Red, 5, HexColorId.Purple, 5) },
+            { 13, Repeat(HexColorId.Red, 5) },
+            { 14, StackWithTop(HexColorId.Green, HexColorId.Blue, HexColorId.Red, 4) },
+            { 15, StackWithTop(HexColorId.Red, HexColorId.Purple, HexColorId.Yellow, 3) },
+            { 16, StackWithTop(HexColorId.Yellow, HexColorId.Red, HexColorId.Blue, 3) },
+            { 17, StackWithTop(HexColorId.Blue, HexColorId.Green, HexColorId.Purple, 4) },
+            { 18, StackWithTop(HexColorId.Yellow, HexColorId.Blue, HexColorId.Green, 3) }
+        };
+    }
+
+    private static HexCell CreateCell(Transform parent, GameObject cellPrefab, CellPlacement placement, List<HexColorId> colors)
+    {
+        GameObject cellObject = (GameObject)PrefabUtility.InstantiatePrefab(cellPrefab, parent);
+        cellObject.name = "Cell";
         cellObject.transform.SetParent(parent);
-        cellObject.transform.position = AxialToWorld(coordinate);
+        cellObject.transform.position = placement.Position;
+        cellObject.transform.rotation = Quaternion.identity;
 
-        HexCell cell = cellObject.AddComponent<HexCell>();
-        cell.Configure(coordinate, target);
+        HexCell cell = cellObject.GetComponent<HexCell>();
+        if (cell == null)
+        {
+            cell = cellObject.AddComponent<HexCell>();
+        }
 
-        GameObject baseObject = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-        baseObject.name = "CellBase";
-        baseObject.transform.SetParent(cellObject.transform);
-        baseObject.transform.localPosition = new Vector3(0f, -0.055f, 0f);
-        baseObject.transform.localScale = new Vector3(0.9f, 0.018f, 0.9f);
-        Object.DestroyImmediate(baseObject.GetComponent<Collider>());
-        Renderer baseRenderer = baseObject.GetComponent<Renderer>();
-        baseRenderer.sharedMaterial = AssetDatabase.LoadAssetAtPath<Material>(MaterialFolder + (target ? "/CellTarget.mat" : "/CellBase.mat"));
+        cell.Configure(Vector3Int.zero);
+        Renderer baseRenderer = cellObject.GetComponentInChildren<Renderer>(true);
+        baseRenderer.sharedMaterial = AssetDatabase.LoadAssetAtPath<Material>(MaterialFolder + "/CellBase.mat");
         cell.SetRingRenderer(baseRenderer);
 
-        if (colors != null)
-        {
-            HexStack stack = CreateStack("Stack_" + coordinate.x + "_" + coordinate.y, cellObject.transform, Vector3.zero, diskPrefab, materials, colors, false, false);
-            cell.SetStack(stack);
-        }
+        cell.SetInitialStackColors(colors);
 
         return cell;
     }
@@ -188,6 +214,11 @@ public static class PlayableSceneBuilder
             BoxCollider collider = stack.gameObject.AddComponent<BoxCollider>();
             collider.center = new Vector3(0f, 0.22f, 0f);
             collider.size = new Vector3(1f, 0.8f, 1f);
+
+            for (int i = stack.transform.childCount - 1; i >= 0; i--)
+            {
+                Object.DestroyImmediate(stack.transform.GetChild(i).gameObject);
+            }
         }
 
         return offers;
@@ -256,10 +287,10 @@ public static class PlayableSceneBuilder
 
     private static GameObject CreateCellPrefab()
     {
-        string path = PrefabFolder + "/HexCell.prefab";
-        GameObject root = new GameObject("HexCell");
+        string path = PrefabFolder + "/Cell.prefab";
+        GameObject root = new GameObject("Cell");
         HexCell cell = root.AddComponent<HexCell>();
-        cell.Configure(Vector2Int.zero, false);
+        cell.Configure(Vector3Int.zero);
 
         GameObject baseObject = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
         baseObject.name = "CellBase";
@@ -363,6 +394,7 @@ public static class PlayableSceneBuilder
         PackshotController packshot = packshotObject.AddComponent<PackshotController>();
         SetSerialized(packshot, "_group", group);
         SetSerialized(packshot, "_playNowButton", button);
+        SetSerialized(packshot, "_playButtonView", button.GetComponent<PlayButtonView>());
         return packshot;
     }
 
@@ -407,6 +439,7 @@ public static class PlayableSceneBuilder
         image.color = new Color(1f, 0.72f, 0.16f);
         Button button = buttonObject.AddComponent<Button>();
         button.targetGraphic = image;
+        buttonObject.AddComponent<PlayButtonView>();
 
         Text label = CreateText("Label", rect, "PLAY NOW", 44, FontStyle.Bold, new Color(0.08f, 0.06f, 0.04f));
         Stretch(label.rectTransform);
@@ -447,8 +480,7 @@ public static class PlayableSceneBuilder
             CreateMaterial("Hex_Green", new Color(0.3f, 0.9f, 0.58f)),
             CreateMaterial("Hex_Yellow", new Color(1f, 0.86f, 0.25f)),
             CreateMaterial("Hex_Purple", new Color(0.74f, 0.46f, 1f)),
-            CreateMaterial("CellBase", new Color(0.9f, 0.97f, 1f)),
-            CreateMaterial("CellTarget", new Color(0.58f, 1f, 0.9f))
+            CreateMaterial("CellBase", new Color(0.9f, 0.97f, 1f))
         };
     }
 
@@ -465,14 +497,6 @@ public static class PlayableSceneBuilder
         material.color = color;
         EditorUtility.SetDirty(material);
         return material;
-    }
-
-    private static Vector3 AxialToWorld(Vector2Int coordinate)
-    {
-        const float radius = 1.2f;
-        float x = radius * 1.5f * coordinate.x;
-        float z = radius * Mathf.Sqrt(3f) * (coordinate.y + coordinate.x * 0.5f) - 0.25f;
-        return new Vector3(x, 0f, z);
     }
 
     private static List<HexColorId> Repeat(HexColorId color, int amount)
@@ -505,6 +529,18 @@ public static class PlayableSceneBuilder
         return colors;
     }
 
+    private readonly struct CellPlacement
+    {
+        public readonly int Id;
+        public readonly Vector3 Position;
+
+        public CellPlacement(int id, Vector3 position)
+        {
+            Id = id;
+            Position = position;
+        }
+    }
+
     private static void Stretch(RectTransform rect)
     {
         rect.anchorMin = Vector2.zero;
@@ -526,6 +562,20 @@ public static class PlayableSceneBuilder
     {
         SerializedObject serializedObject = new SerializedObject(target);
         serializedObject.FindProperty(propertyName).objectReferenceValue = value;
+        serializedObject.ApplyModifiedPropertiesWithoutUndo();
+        EditorUtility.SetDirty(target);
+    }
+
+    private static void SetSerializedMaterials(Object target, string propertyName, List<Material> materials)
+    {
+        SerializedObject serializedObject = new SerializedObject(target);
+        SerializedProperty property = serializedObject.FindProperty(propertyName);
+        property.arraySize = materials.Count;
+        for (int i = 0; i < materials.Count; i++)
+        {
+            property.GetArrayElementAtIndex(i).objectReferenceValue = materials[i];
+        }
+
         serializedObject.ApplyModifiedPropertiesWithoutUndo();
         EditorUtility.SetDirty(target);
     }

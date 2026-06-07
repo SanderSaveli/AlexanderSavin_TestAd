@@ -94,8 +94,7 @@ public sealed class ReactionResolver : MonoBehaviour
             return false;
         }
 
-        HexColorId color = receiver.TopColor;
-        return donor.TopColor == color && receiver.CountTopColor(color) < _vanishStackSize;
+        return GetMergeDiskCount(receiver, donor) > 0;
     }
 
     private IEnumerator MergeStacks(HexCell receiverCell, HexCell donorCell)
@@ -104,10 +103,11 @@ public sealed class ReactionResolver : MonoBehaviour
         HexStack donor = donorCell.CurrentStack;
         HexColorId color = receiver.TopColor;
         int reservedReceiverCount = receiver.Count;
-        int reservedTopColorCount = receiver.CountTopColor(color);
+        int disksToMove = GetMergeDiskCount(receiver, donor);
+        int movedDisks = 0;
         int runningAnimations = 0;
 
-        while (!donor.IsEmpty && donor.TopColor == color && reservedTopColorCount < _vanishStackSize)
+        while (!donor.IsEmpty && donor.TopColor == color && movedDisks < disksToMove)
         {
             LastResolveHadReaction = true;
             HexDisk disk = donor.PopTopDisk();
@@ -117,10 +117,10 @@ public sealed class ReactionResolver : MonoBehaviour
             AnimateRollingDisk(disk, receiver, target, duration, () => runningAnimations--);
 
             reservedReceiverCount++;
-            reservedTopColorCount++;
+            movedDisks++;
             _reactionStep++;
 
-            if (!donor.IsEmpty && donor.TopColor == color && reservedTopColorCount < _vanishStackSize)
+            if (!donor.IsEmpty && donor.TopColor == color && movedDisks < disksToMove)
             {
                 yield return new WaitForSeconds(_diskLaunchInterval);
             }
@@ -133,6 +133,42 @@ public sealed class ReactionResolver : MonoBehaviour
             donorCell.ClearStack(donor);
             Destroy(donor.gameObject);
         }
+    }
+
+    private int GetMergeDiskCount(HexStack receiver, HexStack donor)
+    {
+        if (receiver == null || donor == null || receiver.IsEmpty || donor.IsEmpty)
+        {
+            return 0;
+        }
+
+        if (receiver.Count >= _vanishStackSize || donor.IsSingleColorStack(_vanishStackSize))
+        {
+            return 0;
+        }
+
+        HexColorId color = receiver.TopColor;
+        if (donor.TopColor != color)
+        {
+            return 0;
+        }
+
+        int donorTopCount = donor.CountTopColor(color);
+        int freeSpace = _vanishStackSize - receiver.Count;
+        int movableCount = Mathf.Min(donorTopCount, freeSpace);
+        if (movableCount <= 0)
+        {
+            return 0;
+        }
+
+        if (movableCount == donorTopCount)
+        {
+            return movableCount;
+        }
+
+        bool receiverWillBecomeSingleColorStack = receiver.CountTopColor(color) == receiver.Count
+            && receiver.Count + movableCount == _vanishStackSize;
+        return receiverWillBecomeSingleColorStack ? movableCount : 0;
     }
 
     private void AnimateRollingDisk(HexDisk disk, HexStack receiver, Vector3 target, float duration, System.Action onComplete)

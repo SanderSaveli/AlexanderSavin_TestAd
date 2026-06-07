@@ -8,9 +8,11 @@ public sealed class PackshotController : MonoBehaviour
 {
     [SerializeField] private CanvasGroup _group;
     [SerializeField] private Button _playNowButton;
+    [SerializeField] private PlayButtonView _playButtonView;
     [SerializeField] private float _fadeDuration = 0.45f;
 
     private bool _shown;
+    private bool _installRequested;
 
     private void Awake()
     {
@@ -24,6 +26,7 @@ public sealed class PackshotController : MonoBehaviour
     {
         _group = groupReference;
         _playNowButton = buttonReference;
+        _playButtonView = _playNowButton != null ? _playNowButton.GetComponent<PlayButtonView>() : null;
         if (_playNowButton != null)
         {
             _playNowButton.onClick.RemoveListener(InstallFullGame);
@@ -42,6 +45,7 @@ public sealed class PackshotController : MonoBehaviour
     public void HideInstant()
     {
         _shown = false;
+        _installRequested = false;
         if (_group == null)
         {
             return;
@@ -50,6 +54,7 @@ public sealed class PackshotController : MonoBehaviour
         _group.alpha = 0f;
         _group.blocksRaycasts = false;
         _group.interactable = false;
+        _playButtonView?.Stop();
     }
 
     public void Show()
@@ -63,6 +68,7 @@ public sealed class PackshotController : MonoBehaviour
             _group.DOFade(1f, _fadeDuration);
         }
 
+        _playButtonView?.Play();
         GameEnded();
     }
 
@@ -73,6 +79,12 @@ public sealed class PackshotController : MonoBehaviour
 
     private void InstallFullGame()
     {
+        if (_installRequested)
+        {
+            return;
+        }
+
+        _installRequested = true;
         InvokeLunaStatic("Luna.Unity.Playable", "InstallFullGame");
     }
 
@@ -87,12 +99,24 @@ public sealed class PackshotController : MonoBehaviour
         MethodInfo[] methods = type.GetMethods(BindingFlags.Public | BindingFlags.Static);
         foreach (MethodInfo method in methods)
         {
-            if (method.Name == methodName && method.GetParameters().Length == 0)
+            if (method.Name == methodName)
             {
-                method.Invoke(null, null);
+                ParameterInfo[] parameters = method.GetParameters();
+                object[] arguments = new object[parameters.Length];
+                for (int i = 0; i < parameters.Length; i++)
+                {
+                    arguments[i] = parameters[i].HasDefaultValue ? parameters[i].DefaultValue : GetDefaultValue(parameters[i].ParameterType);
+                }
+
+                method.Invoke(null, arguments);
                 return;
             }
         }
+    }
+
+    private static object GetDefaultValue(Type type)
+    {
+        return type.IsValueType ? Activator.CreateInstance(type) : null;
     }
 
     private static Type FindType(string fullName)

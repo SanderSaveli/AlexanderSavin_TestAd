@@ -1,14 +1,15 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public sealed class HexCell : MonoBehaviour
 {
-    [SerializeField] private Vector2Int _coordinate;
-    [SerializeField] private bool _isTutorialTarget;
+    [SerializeField] private Vector3Int _gridPosition;
+    [SerializeField] private List<HexColorId> _initialStackColors = new List<HexColorId>();
     [SerializeField] private HexStack _currentStack;
     [SerializeField] private Renderer _ringRenderer;
 
-    public Vector2Int Coordinate => _coordinate;
-    public bool IsTutorialTarget => _isTutorialTarget;
+    public Vector3Int GridPosition => _gridPosition;
+    public IReadOnlyList<HexColorId> InitialStackColors => _initialStackColors;
     public HexStack CurrentStack => _currentStack;
 
     public void Initialize()
@@ -24,10 +25,16 @@ public sealed class HexCell : MonoBehaviour
         }
     }
 
-    public void Configure(Vector2Int value, bool tutorialTarget)
+    public void Configure(Vector3Int gridPosition)
     {
-        _coordinate = value;
-        _isTutorialTarget = tutorialTarget;
+        _gridPosition = gridPosition;
+    }
+
+    public void SetInitialStackColors(List<HexColorId> colors)
+    {
+        _initialStackColors = colors != null
+            ? new List<HexColorId>(colors)
+            : new List<HexColorId>();
     }
 
     public void SetRingRenderer(Renderer renderer)
