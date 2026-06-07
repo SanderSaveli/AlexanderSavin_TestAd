@@ -36,12 +36,6 @@ public sealed class BoardController : MonoBehaviour
 
     public void Initialize()
     {
-        if (_grid == null)
-        {
-            Debug.LogError("BoardController has no Grid reference.");
-            return;
-        }
-
         _cells.Clear();
         _cellByGridPosition.Clear();
         _neighborsByCell.Clear();
@@ -50,8 +44,12 @@ public sealed class BoardController : MonoBehaviour
 
         foreach (HexCell cell in sceneCells)
         {
-            Vector3Int gridPosition = _grid.WorldToCell(cell.transform.position);
-            cell.Configure(gridPosition);
+            Vector3Int gridPosition = cell.GridPosition;
+            if (_grid != null)
+            {
+                gridPosition = _grid.WorldToCell(cell.transform.position);
+                cell.Configure(gridPosition);
+            }
             cell.Initialize();
             SpawnInitialStack(cell);
             _cells.Add(cell);
@@ -139,22 +137,41 @@ public sealed class BoardController : MonoBehaviour
 
     private void BuildNeighborCache()
     {
+        if (_grid == null)
+        {
+            BuildWorldNeighborCache();
+            return;
+        }
+
         foreach (HexCell cell in _cells)
         {
             List<HexCell> neighbors = new List<HexCell>(6);
-            float neighborDistance = GetGridNeighborDistance(cell.GridPosition);
+
+            float neighborDistance = GetGridNeighborDistance(cell);
 
             foreach (Vector3Int offset in CandidateNeighborOffsets)
             {
                 Vector3Int neighborPosition = cell.GridPosition + offset;
+
                 if (!_cellByGridPosition.TryGetValue(neighborPosition, out HexCell neighbor))
                 {
                     continue;
                 }
 
-                float distance = Vector3.Distance(
-                    _grid.GetCellCenterWorld(cell.GridPosition),
-                    _grid.GetCellCenterWorld(neighborPosition));
+                float distance;
+
+                if (_grid != null)
+                {
+                    distance = Vector3.Distance(
+                        _grid.GetCellCenterWorld(cell.GridPosition),
+                        _grid.GetCellCenterWorld(neighborPosition));
+                }
+                else
+                {
+                    distance = Vector3.Distance(
+                        cell.transform.position,
+                        neighbor.transform.position);
+                }
 
                 if (distance <= neighborDistance * NEIGHBOR_DISTANCE_TOLERANCE)
                 {
@@ -166,15 +183,76 @@ public sealed class BoardController : MonoBehaviour
         }
     }
 
-    private float GetGridNeighborDistance(Vector3Int gridPosition)
+    private void BuildWorldNeighborCache()
+    {
+        foreach (HexCell cell in _cells)
+        {
+            List<HexCell> neighbors = new List<HexCell>(6);
+            float neighborDistance = GetWorldNeighborDistance(cell);
+            float maxNeighborDistance = neighborDistance * NEIGHBOR_DISTANCE_TOLERANCE;
+
+            foreach (HexCell other in _cells)
+            {
+                if (other == cell)
+                {
+                    continue;
+                }
+
+                float distance = Vector3.Distance(cell.transform.position, other.transform.position);
+                if (distance <= maxNeighborDistance)
+                {
+                    neighbors.Add(other);
+                }
+            }
+
+            _neighborsByCell[cell] = neighbors;
+        }
+    }
+
+    private float GetGridNeighborDistance(HexCell cell)
     {
         float bestDistance = float.MaxValue;
-        Vector3 center = _grid.GetCellCenterWorld(gridPosition);
 
-        foreach (Vector3Int offset in CandidateNeighborOffsets)
+        if (_grid != null)
         {
-            float distance = Vector3.Distance(center, _grid.GetCellCenterWorld(gridPosition + offset));
-            if (distance < bestDistance)
+            Vector3 center = _grid.GetCellCenterWorld(cell.GridPosition);
+
+            foreach (Vector3Int offset in CandidateNeighborOffsets)
+            {
+                float distance = Vector3.Distance(
+                    center,
+                    _grid.GetCellCenterWorld(cell.GridPosition + offset));
+
+                if (distance < bestDistance)
+                {
+                    bestDistance = distance;
+                }
+            }
+        }
+        else
+        {
+            bestDistance = GetWorldNeighborDistance(cell);
+        }
+
+        return bestDistance;
+    }
+
+    private float GetWorldNeighborDistance(HexCell cell)
+    {
+        float bestDistance = float.MaxValue;
+
+        foreach (HexCell other in _cells)
+        {
+            if (other == cell)
+            {
+                continue;
+            }
+
+            float distance = Vector3.Distance(
+                cell.transform.position,
+                other.transform.position);
+
+            if (distance > 0.01f && distance < bestDistance)
             {
                 bestDistance = distance;
             }

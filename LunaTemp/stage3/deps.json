@@ -1,6 +1,51 @@
 {
-  "ignores": [],
+  "ignores": [
+    "E:/Develop/AlexanderSavin_TestAD/LunaTemp/stage3/processed-scripts/Assets/Plugins/Demigiant/Modules/DOTweenModuleAudio.cs",
+    "E:/Develop/AlexanderSavin_TestAD/LunaTemp/stage3/processed-scripts/Assets/Plugins/Demigiant/Modules/DOTweenModulePhysics.cs",
+    "E:/Develop/AlexanderSavin_TestAD/LunaTemp/stage3/processed-scripts/Assets/Plugins/Demigiant/Modules/DOTweenModulePhysics2D.cs",
+    "E:/Develop/AlexanderSavin_TestAD/LunaTemp/stage3/processed-scripts/Assets/Plugins/Demigiant/Modules/DOTweenModuleSprite.cs",
+    "E:/Develop/AlexanderSavin_TestAD/LunaTemp/stage3/processed-scripts/Assets/Plugins/Demigiant/Modules/DOTweenModuleUI.cs",
+    "E:/Develop/AlexanderSavin_TestAD/LunaTemp/stage3/processed-scripts/Assets/Plugins/Demigiant/Modules/DOTweenModuleUnityVersion.cs"
+  ],
   "groups": [
+    [
+      "E:/Develop/AlexanderSavin_TestAD/LunaTemp/stage3/processed-scripts/Assets/Plugins/Demigiant/Modules/DOTweenModuleAudio.cs"
+    ],
+    [
+      "E:/Develop/AlexanderSavin_TestAD/LunaTemp/stage3/processed-scripts/Assets/Plugins/Demigiant/Modules/DOTweenModuleEPOOutline.cs"
+    ],
+    [
+      "E:/Develop/AlexanderSavin_TestAD/LunaTemp/stage3/processed-scripts/Assets/Plugins/Demigiant/Modules/DOTweenModulePhysics.cs"
+    ],
+    [
+      "E:/Develop/AlexanderSavin_TestAD/LunaTemp/stage3/processed-scripts/Assets/Plugins/Demigiant/Modules/DOTweenModulePhysics2D.cs"
+    ],
+    [
+      "E:/Develop/AlexanderSavin_TestAD/LunaTemp/stage3/processed-scripts/Assets/Plugins/Demigiant/Modules/DOTweenModuleSprite.cs"
+    ],
+    [
+      "E:/Develop/AlexanderSavin_TestAD/LunaTemp/stage3/processed-scripts/Assets/Plugins/Demigiant/Modules/DOTweenModuleUI.cs"
+    ],
+    [
+      "E:/Develop/AlexanderSavin_TestAD/LunaTemp/stage3/processed-scripts/Assets/Plugins/Demigiant/Modules/DOTweenModuleUnityVersion.cs"
+    ],
+    [
+      "E:/Develop/AlexanderSavin_TestAD/LunaTemp/stage3/processed-scripts/Assets/Plugins/Demigiant/Modules/DOTweenModuleUtils.cs"
+    ],
+    [
+      "E:/Develop/AlexanderSavin_TestAD/LunaTemp/stage3/processed-scripts/Assets/Source/Scripts/BoardController.cs",
+      "E:/Develop/AlexanderSavin_TestAD/LunaTemp/stage3/processed-scripts/Assets/Source/Scripts/DragController.cs",
+      "E:/Develop/AlexanderSavin_TestAD/LunaTemp/stage3/processed-scripts/Assets/Source/Scripts/GameController.cs",
+      "E:/Develop/AlexanderSavin_TestAD/LunaTemp/stage3/processed-scripts/Assets/Source/Scripts/ReactionResolver.cs",
+      "E:/Develop/AlexanderSavin_TestAD/LunaTemp/stage3/processed-scripts/Assets/Source/Scripts/HexCell.cs",
+      "E:/Develop/AlexanderSavin_TestAD/LunaTemp/stage3/processed-scripts/Assets/Source/Scripts/HexStack.cs",
+      "E:/Develop/AlexanderSavin_TestAD/LunaTemp/stage3/processed-scripts/Assets/Source/Scripts/HexColorId.cs",
+      "E:/Develop/AlexanderSavin_TestAD/LunaTemp/stage3/processed-scripts/Assets/Source/Scripts/HexDisk.cs",
+      "E:/Develop/AlexanderSavin_TestAD/LunaTemp/stage3/processed-scripts/Assets/Source/Scripts/TutorialController.cs",
+      "E:/Develop/AlexanderSavin_TestAD/LunaTemp/stage3/processed-scripts/Assets/Source/Scripts/PackshotController.cs",
+      "E:/Develop/AlexanderSavin_TestAD/LunaTemp/stage3/processed-scripts/Assets/Source/Scripts/PlayButtonView.cs",
+      "E:/Develop/AlexanderSavin_TestAD/LunaTemp/stage3/processed-scripts/Assets/Source/Scripts/GameState.cs"
+    ],
     [
       "C:/Users/ssavi/Downloads/Luna/pipeline/templates/LunaCompiler/Scripts/Properties/AssemblyInfo.cs"
     ],
