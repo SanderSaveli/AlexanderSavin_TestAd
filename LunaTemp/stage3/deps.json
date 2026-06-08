@@ -42,18 +42,19 @@
       "E:/Develop/AlexanderSavin_TestAD/LunaTemp/stage3/processed-scripts/Assets/Source/Scripts/HexColorId.cs",
       "E:/Develop/AlexanderSavin_TestAD/LunaTemp/stage3/processed-scripts/Assets/Source/Scripts/HexDisk.cs",
       "E:/Develop/AlexanderSavin_TestAD/LunaTemp/stage3/processed-scripts/Assets/Source/Scripts/TutorialController.cs",
+      "E:/Develop/AlexanderSavin_TestAD/LunaTemp/stage3/processed-scripts/Assets/Source/Scripts/CellHighlightView.cs",
       "E:/Develop/AlexanderSavin_TestAD/LunaTemp/stage3/processed-scripts/Assets/Source/Scripts/PackshotController.cs",
       "E:/Develop/AlexanderSavin_TestAD/LunaTemp/stage3/processed-scripts/Assets/Source/Scripts/PlayButtonView.cs",
       "E:/Develop/AlexanderSavin_TestAD/LunaTemp/stage3/processed-scripts/Assets/Source/Scripts/GameState.cs"
     ],
     [
-      "C:/Users/ssavi/Downloads/Luna/pipeline/templates/LunaCompiler/Scripts/Properties/AssemblyInfo.cs"
+      "C:/Users/ssavi/Downloads/7.2.0 (1)/pipeline/templates/LunaCompiler/Scripts/Properties/AssemblyInfo.cs"
     ],
     [
-      "C:/Users/ssavi/Downloads/Luna/pipeline/templates/LunaCompiler/Scripts/Sources/OtherDummyScript.cs"
+      "C:/Users/ssavi/Downloads/7.2.0 (1)/pipeline/templates/LunaCompiler/Scripts/Sources/OtherDummyScript.cs"
     ],
     [
-      "C:/Users/ssavi/Downloads/Luna/pipeline/templates/LunaCompiler/Scripts/obj/Debug/.NETFramework,Version=v4.7.AssemblyAttributes.cs"
+      "C:/Users/ssavi/Downloads/7.2.0 (1)/pipeline/templates/LunaCompiler/Scripts/obj/Debug/.NETFramework,Version=v4.7.AssemblyAttributes.cs"
     ]
   ]
 }

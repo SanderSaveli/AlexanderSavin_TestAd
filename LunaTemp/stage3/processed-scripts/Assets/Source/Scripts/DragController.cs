@@ -11,6 +11,7 @@ public sealed class DragController : MonoBehaviour
     private Camera _gameCamera;
     private BoardController _board;
     private HexStack _draggedStack;
+    private HexCell _highlightedCell;
     private Vector3 _dragOffset;
     private Plane _dragPlane;
     private bool _pointerDown;
@@ -44,6 +45,11 @@ public sealed class DragController : MonoBehaviour
         }
     }
 
+    private void OnDisable()
+    {
+        ClearHighlightedCell();
+    }
+
     private void TryBeginDrag([Bridge.Ref] Vector3 screenPosition)
     {
         Ray ray = _gameCamera.ScreenPointToRay(screenPosition);
@@ -60,6 +66,7 @@ public sealed class DragController : MonoBehaviour
 
         _draggedStack = stack;
         _pointerDown = true;
+        ClearHighlightedCell();
         _dragPlane = new Plane(Vector3.up, Vector3.zero);
         Vector3 pointerWorld = GetWorldPoint(screenPosition);
         _dragOffset = _draggedStack.transform.position - pointerWorld;
@@ -79,6 +86,7 @@ public sealed class DragController : MonoBehaviour
         Vector3 target = GetWorldPoint(screenPosition) + _dragOffset;
         target.y = _liftHeight;
         _draggedStack.transform.position = Vector3.Lerp(_draggedStack.transform.position, target, Time.deltaTime * _followLerp);
+        UpdateHighlightedCell();
     }
 
     private void EndDrag()
@@ -91,6 +99,7 @@ public sealed class DragController : MonoBehaviour
 
         HexStack stack = _draggedStack;
         _draggedStack = null;
+        ClearHighlightedCell();
 
         if (_board.TryGetDropCell(stack.transform.position, stack, out HexCell cell))
         {
@@ -123,5 +132,44 @@ public sealed class DragController : MonoBehaviour
         }
 
         return Vector3.zero;
+    }
+
+    private void UpdateHighlightedCell()
+    {
+        if (_draggedStack == null)
+        {
+            ClearHighlightedCell();
+            return;
+        }
+
+        _board.TryGetDropCell(_draggedStack.transform.position, _draggedStack, out HexCell cell);
+        SetHighlightedCell(cell);
+    }
+
+    private void SetHighlightedCell(HexCell cell)
+    {
+        if (_highlightedCell == cell)
+        {
+            return;
+        }
+
+        ClearHighlightedCell();
+        _highlightedCell = cell;
+
+        if (_highlightedCell != null)
+        {
+            _highlightedCell.SetHighlight(true);
+        }
+    }
+
+    private void ClearHighlightedCell()
+    {
+        if (_highlightedCell == null)
+        {
+            return;
+        }
+
+        _highlightedCell.SetHighlight(false);
+        _highlightedCell = null;
     }
 }

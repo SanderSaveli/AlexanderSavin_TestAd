@@ -7,6 +7,7 @@ public sealed class HexCell : MonoBehaviour
     [SerializeField] private List<HexColorId> _initialStackColors = new List<HexColorId>();
     [SerializeField] private HexStack _currentStack;
     [SerializeField] private Renderer _ringRenderer;
+    [SerializeField] private CellHighlightView _highlightView;
 
     public Vector3Int GridPosition => _gridPosition;
     public IReadOnlyList<HexColorId> InitialStackColors => _initialStackColors;
@@ -42,6 +43,11 @@ public sealed class HexCell : MonoBehaviour
         _ringRenderer = renderer;
     }
 
+    public void SetHighlightView(CellHighlightView highlightView)
+    {
+        _highlightView = highlightView;
+    }
+
     public void SetStack(HexStack stack)
     {
         _currentStack = stack;
@@ -65,22 +71,9 @@ public sealed class HexCell : MonoBehaviour
 
     public void SetHighlight(bool enabled)
     {
-        if (_ringRenderer == null)
+        if (_highlightView != null)
         {
-            return;
-        }
-
-        _ringRenderer.enabled = true;
-        if (!Application.isPlaying)
-        {
-            return;
-        }
-
-        if (_ringRenderer.material.HasProperty("_Color"))
-        {
-            _ringRenderer.material.color = enabled
-                ? new Color(0.42f, 0.64f, 0.95f, 1f)
-                : new Color(0.18f, 0.2f, 0.23f, 1f);
+            _highlightView.SetHighlighted(enabled);
         }
     }
 }

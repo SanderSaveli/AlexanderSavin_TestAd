@@ -55,7 +55,8 @@ MonoBehaviour:
   - {fileID: 2100000, guid: 9bdfa13f3ede48845b22e7f332005f30, type: 2}
   - {fileID: 2100000, guid: 44a8e3f187145514ca625937d541f0e1, type: 2}
   _initialColors: 
-  _diskHeight: 0.12
+  _diskHeight: 0.18
+  _diskScale: {x: 1, y: 1.5, z: 1}
   _isOfferStack: 0
   _isSolutionStack: 0
 --- !u!65 &5227035753218451345
@@ -77,5 +78,5 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 0.8, z: 1}
-  m_Center: {x: 0, y: 0.22, z: 0}
+  m_Size: {x: 1, y: 1.1, z: 1}
+  m_Center: {x: 0, y: 0.36, z: 0}

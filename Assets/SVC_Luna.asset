@@ -364,9 +364,63 @@ MonoBehaviour:
     upToDate: 0
     keywords:
       "\L\u2025": []
+  - shaderCompilerPlatform: 5
+    shader: {fileID: 64, guid: 0000000000000000f000000000000000, type: 0}
+    passType: 0
+    passId: 0
+    subShaderIndex: 2
+    upToDate: 0
+    keywords:
+      "\L\u2025":
+      - SHADOWS_SPLIT_SPHERES
+  - shaderCompilerPlatform: 9
+    shader: {fileID: 64, guid: 0000000000000000f000000000000000, type: 0}
+    passType: 0
+    passId: 0
+    subShaderIndex: 2
+    upToDate: 0
+    keywords:
+      "\L\u2025":
+      - SHADOWS_SPLIT_SPHERES
+  - shaderCompilerPlatform: 5
+    shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
+    passType: 4
+    passId: 0
+    subShaderIndex: 0
+    upToDate: 0
+    keywords:
+      "\L\u2025":
+      - DIRECTIONAL
+  - shaderCompilerPlatform: 9
+    shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
+    passType: 4
+    passId: 0
+    subShaderIndex: 0
+    upToDate: 0
+    keywords:
+      "\L\u2025":
+      - DIRECTIONAL
+  - shaderCompilerPlatform: 5
+    shader: {fileID: 64, guid: 0000000000000000f000000000000000, type: 0}
+    passType: 0
+    passId: 0
+    subShaderIndex: 0
+    upToDate: 0
+    keywords:
+      "\L\u2025":
+      - SHADOWS_SPLIT_SPHERES
+  - shaderCompilerPlatform: 9
+    shader: {fileID: 64, guid: 0000000000000000f000000000000000, type: 0}
+    passType: 0
+    passId: 0
+    subShaderIndex: 0
+    upToDate: 0
+    keywords:
+      "\L\u2025":
+      - SHADOWS_SPLIT_SPHERES
   _includedShaderVariants: []
   _excludedShaderVariants: []
-  version: 127
+  version: 192
   _shaderParsedShaders:
   - ParsedSubShaders:
     - Index: 0

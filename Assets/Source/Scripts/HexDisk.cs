@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public sealed class HexDisk : MonoBehaviour
 {
@@ -15,12 +16,19 @@ public sealed class HexDisk : MonoBehaviour
         foreach (Renderer diskRenderer in _renderers)
         {
             diskRenderer.sharedMaterial = material;
+            diskRenderer.shadowCastingMode = ShadowCastingMode.On;
+            diskRenderer.receiveShadows = true;
         }
     }
 
     public void CacheRenderers()
     {
         _renderers = GetComponentsInChildren<Renderer>(true);
+        foreach (Renderer diskRenderer in _renderers)
+        {
+            diskRenderer.shadowCastingMode = ShadowCastingMode.On;
+            diskRenderer.receiveShadows = true;
+        }
     }
 
     public void SetAlpha(float alpha)

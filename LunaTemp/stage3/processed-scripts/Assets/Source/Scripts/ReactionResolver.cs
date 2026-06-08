@@ -10,7 +10,8 @@ public sealed class ReactionResolver : MonoBehaviour
 
     [SerializeField] private GameObject _vanishFxPrefab;
     [SerializeField] private float _baseFlyDuration = 0.38f;
-    [SerializeField] private float _baseVanishDuration = 0.22f;
+    [SerializeField] private float _vanishDiskScaleDuration = 0.22f;
+    [SerializeField] private float _vanishDiskDelay = 0.035f;
     [SerializeField] private float _speedIncrease = 1.18f;
     [SerializeField] private float _maxReactionSpeedMultiplier = 2.2f;
     [SerializeField] private float _diskLaunchInterval = 0.09f;
@@ -72,17 +73,29 @@ public sealed class ReactionResolver : MonoBehaviour
 
     public IEnumerator CleanFullStacks()
     {
+        List<VanishingStack> stacksToVanish = new List<VanishingStack>();
         List<HexCell> cells = new List<HexCell>(_board.Cells);
         foreach (HexCell cell in cells)
         {
             HexStack stack = cell.CurrentStack;
             if (stack != null && stack.IsSingleColorStack(_vanishStackSize))
             {
-                VanishStack(cell, stack);
+                stacksToVanish.Add(new VanishingStack(cell, stack));
             }
         }
 
-        yield return null;
+        int runningAnimations = stacksToVanish.Count;
+        float duration = GetScaledDuration(_vanishDiskScaleDuration);
+        foreach (VanishingStack vanishingStack in stacksToVanish)
+        {
+            VanishStack(vanishingStack.Cell, vanishingStack.Stack, duration, () => runningAnimations--);
+            _reactionStep++;
+        }
+
+        while (runningAnimations > 0)
+        {
+            yield return null;
+        }
     }
 
     private bool CanMerge(HexCell receiverCell, HexCell donorCell)
@@ -219,12 +232,13 @@ public sealed class ReactionResolver : MonoBehaviour
             {
                 disk.transform.SetParent(null, true);
                 receiver.PushDisk(disk);
+                Vector3 diskScale = receiver.DiskScale;
                 onComplete?.Invoke();
                 disk.transform
                     .DOPunchScale(Vector3.one * 0.08f, PUNCH_SCALE_DURATION, 1, 0.4f)
                     .OnComplete(() =>
                     {
-                        disk.transform.localScale = Vector3.one;
+                        disk.transform.localScale = diskScale;
                     });
             }
             else
@@ -239,46 +253,51 @@ public sealed class ReactionResolver : MonoBehaviour
         });
     }
 
-    private void VanishStack(HexCell cell, HexStack stack)
+    private void VanishStack(HexCell cell, HexStack stack, float duration, System.Action onComplete)
     {
         Vector3 vanishPosition = stack.transform.position;
-        List<HexDisk> disks = stack.RemoveTopDisks(_vanishStackSize);
-        _reactionStep++;
-        cell.ClearStack(stack);
-        Destroy(stack.gameObject);
-
-        if (_vanishFxPrefab != null)
-        {
-            GameObject fx = Instantiate(_vanishFxPrefab, vanishPosition + Vector3.up * 0.35f, Quaternion.identity);
-            fx.SetActive(true);
-            ParticleSystem particles = fx.GetComponent<ParticleSystem>();
-            if (particles != null)
-            {
-                particles.Play(true);
-            }
-
-            Destroy(fx, 1.1f);
-        }
-
-        float duration = GetScaledDuration(_baseVanishDuration);
+        List<HexDisk> disks = stack.CopyDisksTopToBottom();
         Sequence vanish = DOTween.Sequence();
-        foreach (HexDisk disk in disks)
-        {
-            vanish.Join(disk.transform.DOScale(Vector3.zero, duration).SetEase(Ease.InBack));
-        }
 
-        vanish.OnComplete(() => DestroyDisks(disks));
-    }
-
-    private void DestroyDisks(List<HexDisk> disks)
-    {
-        foreach (HexDisk disk in disks)
+        for (int i = 0; i < disks.Count; i++)
         {
+            HexDisk disk = disks[i];
             if (disk != null)
             {
-                Destroy(disk.gameObject);
+                vanish.Insert(i * _vanishDiskDelay, disk.transform.DOScale(Vector3.zero, duration).SetEase(Ease.Linear));
             }
         }
+
+        vanish.OnComplete(() =>
+        {
+            cell.ClearStack(stack);
+
+            if (stack != null)
+            {
+                Destroy(stack.gameObject);
+            }
+
+            PlayVanishFx(vanishPosition);
+            onComplete?.Invoke();
+        });
+    }
+
+    private void PlayVanishFx([Bridge.Ref] Vector3 vanishPosition)
+    {
+        if (_vanishFxPrefab == null)
+        {
+            return;
+        }
+
+        GameObject fx = Instantiate(_vanishFxPrefab, vanishPosition + Vector3.up * 0.35f, Quaternion.identity);
+        fx.SetActive(true);
+        ParticleSystem particles = fx.GetComponent<ParticleSystem>();
+        if (particles != null)
+        {
+            particles.Play(true);
+        }
+
+        Destroy(fx, 1.1f);
     }
 
     private void PushIfCheckable(HexCell cell)
@@ -293,5 +312,17 @@ public sealed class ReactionResolver : MonoBehaviour
     {
         float speed = Mathf.Min(Mathf.Pow(_speedIncrease, _reactionStep), _maxReactionSpeedMultiplier);
         return baseDuration / speed;
+    }
+
+    private readonly struct VanishingStack
+    {
+        public readonly HexCell Cell;
+        public readonly HexStack Stack;
+
+        public VanishingStack(HexCell cell, HexStack stack)
+        {
+            Cell = cell;
+            Stack = stack;
+        }
     }
 }

@@ -6,7 +6,8 @@ public sealed class HexStack : MonoBehaviour
     [SerializeField] private Transform _diskPrefab;
     [SerializeField] private List<Material> _colorMaterials = new List<Material>();
     [SerializeField] private List<HexColorId> _initialColors = new List<HexColorId>();
-    [SerializeField] private float _diskHeight = 0.12f;
+    [SerializeField] private float _diskHeight = 0.18f;
+    [SerializeField] private Vector3 _diskScale = new Vector3(1f, 1.5f, 1f);
     [SerializeField] private bool _isOfferStack;
     [SerializeField] private bool _isSolutionStack;
 
@@ -22,6 +23,7 @@ public sealed class HexStack : MonoBehaviour
     public HexCell CurrentCell => _currentCell;
     public Vector3 HomePosition => _homePosition;
     public Transform HomeParent => _homeParent;
+    public Vector3 DiskScale => _diskScale;
     public HexColorId TopColor => _disks[_disks.Count - 1].Color;
 
     public void Configure(Transform prefab, List<Material> materials, List<HexColorId> colors, bool offer, bool solution)
@@ -136,6 +138,7 @@ public sealed class HexStack : MonoBehaviour
         _disks.Add(disk);
         disk.transform.localPosition = GetDiskLocalPosition(_disks.Count - 1);
         disk.transform.localRotation = Quaternion.identity;
+        disk.transform.localScale = _diskScale;
     }
 
     public int CountTopColor(HexColorId color)
@@ -184,6 +187,17 @@ public sealed class HexStack : MonoBehaviour
         return removed;
     }
 
+    public List<HexDisk> CopyDisksTopToBottom()
+    {
+        List<HexDisk> disks = new List<HexDisk>(_disks.Count);
+        for (int i = _disks.Count - 1; i >= 0; i--)
+        {
+            disks.Add(_disks[i]);
+        }
+
+        return disks;
+    }
+
     public Vector3 GetNextDiskWorldPosition()
     {
         return transform.TransformPoint(GetDiskLocalPosition(_disks.Count));
@@ -200,6 +214,7 @@ public sealed class HexStack : MonoBehaviour
         {
             _disks[i].transform.localPosition = GetDiskLocalPosition(i);
             _disks[i].transform.localRotation = Quaternion.identity;
+            _disks[i].transform.localScale = _diskScale;
         }
     }
 
@@ -223,7 +238,7 @@ public sealed class HexStack : MonoBehaviour
         diskTransform.gameObject.SetActive(true);
         diskTransform.localPosition = GetDiskLocalPosition(index);
         diskTransform.localRotation = Quaternion.identity;
-        diskTransform.localScale = Vector3.one;
+        diskTransform.localScale = _diskScale;
 
         HexDisk disk = diskTransform.GetComponent<HexDisk>();
         if (disk == null)
